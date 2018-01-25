@@ -1,5 +1,7 @@
 from pprint import pprint
-VERBOSE = True # Debug flag
+
+# VERBOSE = True # Debug flag
+VERBOSE = False
 
 """
 Utility module provides common operations when working over Z_n, such
@@ -18,16 +20,13 @@ def vprint(*args):
     for arg in args:
         print arg
 
-def swap(a, b):
-    return b, a
-
-def gen_times_table(n):
+def times_table(n):
     """
     Outputs a 2D matrix of modular multiplication in Zn
     """
-   return [[(i * j) % n for i in range(n)] for j in range(n)]
+    return [[(i * j) % n for i in range(n)] for j in range(n)]
 
-def gen_plus_table(n):
+def plus_table(n):
     """
     Outputs a 2D matrix of modular addition in Zn
     """
@@ -51,7 +50,10 @@ def zn_star(n):
     Generates Z*_n = {x | 0 < x < n and gcd(x, n) = 1}.
     This structure is the sort of group used for "textbook RSA"
     """
-    return [x for x in range(1, n) if n % x != 0]
+    return [x for x in range(1, n) if coprime(x, n)]
+
+def coprime(a,b):
+  return gcd(a, b) == 1
 
 def elts_generated_by_g_in_zn(g, n):
     """
@@ -72,12 +74,12 @@ def elts_generated_by_g_in_zn(g, n):
     return elts_generated
 
 def is_generator_in_zn(g, n):
-    """Checks if g is a generator of Zn"""
+    """Checks if g is a generator of z_n*"""
     elts_generated = elts_generated_by_g_in_zn(g, n)
     vprint("g:{}, elts:{}\n".format(g, elts_generated))
     return all([i in elts_generated for i in zn_star(n)])
 
-def find_generator(n):
+def generators(n):
     """Returns a list containing the generator(s) of z_n"""
     return [g for g in zn_star(n)
             if is_generator_in_zn(g, n)]
@@ -97,7 +99,9 @@ def gcd(a, b):
     Computes gcd(a, b)
     Precondition: a >= b
     """
-    assert(a >= b)
+    if (a < b):
+      a, b = b, a
+
     if a == b:
         return a
 
@@ -107,7 +111,6 @@ def gcd(a, b):
     if r == 0:
         return b
     return gcd(b, r)
-
 
 def extended_euclidean(a, b):
     """
@@ -180,7 +183,7 @@ def inverse_in_zn(g, n):
         return y + n
     return y
 
-def dlog(h, g, n):
+def dlog(g, h, n):
     """
     Finds dlog(h) base-g in Z_n, i.e.
     given generator g, finds x such that g^x = h in Z_n
@@ -205,27 +208,27 @@ def int2bin(i):
 def fast_exp(a, x, n):
     """Speedily computes a^x (mod n)"""
     x_2 = int2bin(x)
-    print "{} = [{}]_2".format(str(x), x_2)
+    vprint("{} = [{}]_2".format(str(x), x_2))
     powers = [a % n]
-    print "{}^(2^0) = {}^1 = {} \\equiv {}".format(a, a, a, (a % n))
+    vprint("{}^(2^0) = {}^1 = {} \\equiv {}".format(a, a, a, (a % n)))
     i = 1
     while i < len(x_2):
         # This (hilariously ugly) print statement prints the
         # intermediary operations in a format that can be easily
         # exported to LaTeX. TODO: Split it up into sane chunks.
-        print "{}^{{ {}^{} }} = {}^{{ {} }} = {}^{{ {} }} * {}^{{ {} }} = {}*{} = {} \\equiv {}".format(
+        vprint("{}^{{ {}^{} }} = {}^{{ {} }} = {}^{{ {} }} * {}^{{ {} }} = {}*{} = {} \\equiv {}".format(
             a, 2, i,
             a, pow(2, i),
             a, pow(2, i-1),
             a, pow(2, i-1),
             powers[-1], powers[-1],
             powers[-1] * powers[-1],
-            (powers[-1] * powers[-1]) % n)
+            (powers[-1] * powers[-1]) % n))
         next_power = (powers[-1] * powers[-1]) % n
         powers.append(next_power)
         i += 1
 
-    print "{}^{{ {} }} = ...".format(a, x)
+    vprint("{}^{{ {} }} = ...".format(a, x))
     rpowers = list(reversed(powers))
     prod = 1
     i = 0
@@ -233,9 +236,9 @@ def fast_exp(a, x, n):
         bit = x_2[i]
         power = rpowers[i]
         if bit == "1":
-            print "* {} \t== {}^{{ 2^{{ {} }} }}\n".format(power, a, len(x_2) - i - 1)
+            vprint("* {} \t== {}^{{ 2^{{ {} }} }}\n".format(power, a, len(x_2) - i - 1))
             prod *= power
         i += 1
     result = prod % n
-    print "= {} \\equiv {}".format(prod, result)
+    vprint("= {} \\equiv {}".format(prod, result))
     return result
