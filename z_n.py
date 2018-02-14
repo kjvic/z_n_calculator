@@ -38,7 +38,7 @@ def zn_pow(x, y, n):
     """
     if y < 0:
         y = abs(y)
-        x = inverse_in_zn(x, n)
+        x = inverse_mod_n(x, n)
     product = 1
     for i in range(y):
         product = (product * x) % n
@@ -118,7 +118,8 @@ def extended_euclidean(a, b):
     finds X, Y, d such that aX + bY = d, where d = gcd(a, b)
     """
     vprint("a: {}, b: {}".format(a, b))
-    assert(a >= b)
+    if (a < b):
+      a, b = b, a
     if a == b:
         x = 1
         y = 0
@@ -162,23 +163,24 @@ def is_prime_by_fermat_test(n, a):
     vprint("composite")
     return False
 
-def inverse_in_zn(g, n):
+def inverse_mod_n(a, n):
     """
-    Find inverse of g in z_n
+    Find inverse of a in z_n
 
-    NOTE: extended_euclidean(n, g) returns X, Y, d such that
-        x*n + y*g = gcd(n, g)
+    NOTE: extended_euclidean(n, a) returns X, Y, d such that
+        x*n + y*a = gcd(n, a)
 
-    If n is prime, then gcd(n, g) is guaranteed to be 1, so
-        x*n + y*g = gcd(n, g) = 1
+    If n is prime, then gcd(n, a) is guaranteed to be 1, so
+        x*n + y*a = gcd(n, a) = 1
 
     Furthermore, since we're in Z_n, (x*n) % n = 0. So
-        x*n + y*g = 1
-         0  + y*g = 1
-    i.e. y is the multiplicative inverse of g in Z_n
+        x*n + y*a = 1
+         0  + y*a = 1
+    i.e. y is the multiplicative inverse of a in Z_n
     """
-    assert(n >= g)
-    x, y, d = extended_euclidean(n, g)
+    if n < a:
+       a = a % n
+    x, y, d = extended_euclidean(n, a)
     if y < 0:
         return y + n
     return y
