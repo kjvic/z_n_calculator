@@ -12,6 +12,34 @@ as:
 - applying Fermat's primality test
 """
 
+import operator
+import functools
+
+def crt(moduli, rhs_values):
+  """
+  Suppose that you want to solve
+  x = a1 (mod m1)
+  x = a2 (mod m2)
+  x = a3 (mod m3)
+  ...
+  x = an (mod mn)
+
+  using the Chinese Remainder Theorem.
+  Then you should input
+  moduli = [m1, m2, m3, ..., mn]
+  rhs_values = [a1, a2, a3, ..., an]
+  """
+  M = functools.reduce(operator.mul, moduli, 1)
+  b = [M / mi for mi in moduli]
+  bprime = [inverse_mod_n(bi, mi) for (bi, mi) in zip (b, moduli)]
+  x = sum([ai * bi * bprimei for (ai, bi, bprimei) in zip(rhs_values, b, bprime)])
+  return x % M
+
+def is_crt_solution(x, moduli, rhs_values):
+  M = functools.reduce(operator.mul, moduli, 1)
+  x = x % M
+  return all([x % mi == ai for (mi, ai) in zip(moduli, rhs_values)])
+
 def vprint(*args):
     if not VERBOSE:
         return
