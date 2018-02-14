@@ -194,6 +194,36 @@ def fermat_is_prime(n, a=None):
         return PRIME
     return COMPOSITE
 
+def miller_rabin_is_prime(n, a=None):
+  if gcd(a, n) != 1:
+    return COMPOSITE
+
+  # Write n-1 as n-1 = 2^k * m for largest k s.t. m is odd
+  k = 0
+  m = bin(n-1)
+  while m[-1] == '0':
+    k += 1
+    m = m[:-1]
+  m = int(m, 2)                 # Convert back to decimal from binary
+
+  print "n-1 = 2^k * m\t{} = 2^{} * {}".format(n-1, k, m)
+  print "k={}, m={}".format(k, m)
+
+  # Check a_0
+  a_i = zn_pow(a, m, n)         # a^m mod n
+  if a_i == 1:
+    return PRIME
+
+  # Check a_i's
+  for i in range(k):
+    a_i = (a_i ** 2) % n
+    print "a_{} = {}".format(i, a_i)
+    # Note: n-1 = -1 (mod n)
+    if a_i == n-1:
+      return PRIME
+    elif a_i == 1:
+      return COMPOSITE
+  return COMPOSITE
 
 def inverse_mod_n(a, n):
     """
