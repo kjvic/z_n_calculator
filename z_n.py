@@ -151,17 +151,21 @@ def extended_euclidean(a, b):
     vprint("x: {}, y: {}, d: {}".format(x, y, d))
     return x, y, d
 
-def is_prime_by_fermat_test(n, a):
+PRIME = "prime"
+COMPOSITE = "composite"
+
+def fermat_is_prime(n, a=None):
     """
     Test if n is prime, with witness a.
     Output True if n is prime, False otherwise
     """
+    if a is None:
+      a = random.randint(1, n-1)
     output = zn_pow(a, n-1, n) # a^{n-1}, mod n
     if output == 1:
-        vprint("prime")
-        return True
-    vprint("composite")
-    return False
+        return PRIME
+    return COMPOSITE
+
 
 def inverse_mod_n(a, n):
     """
